@@ -18,14 +18,13 @@ class Coins:
     
     def lost(self,player,amount):
 
-        if (self.__players_coins[player-1] - amount) < 0:
-            self.__players_coins[player-1] = 0
+        if (self.__players_coins[player] - amount) < 0:
+            self.__players_coins[player] = 0
         else:
-            self.__players_coins[player-1] -= amount
+            self.__players_coins[player] -= amount
 
     def adquired(self,player,amount):
 
-        if (self.__players_coins[player-1]+amount) > 10:
-            self.__players_coins[player-1] = 10
-        else:
-            self.__players_coins[player-1] += amount
+            self.__players_coins[player] += amount
+
+    
