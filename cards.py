@@ -46,6 +46,13 @@ class Cards:
             for x in range(2):
                 l_togo.append(self.__deck.pop(0))
             self.__hands.append(l_togo)
+
+    def changecard(self,player,card):
+        top_deck = self.__deck.pop(0)
+        hand_card = self.__hands[player].pop(card)
+        self.__hands[player].append(top_deck)
+        self.__deck.append(hand_card)
+        shuffle_deck()
             
 
     
