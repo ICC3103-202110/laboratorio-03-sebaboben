@@ -22,20 +22,18 @@ def counter_card(action):
 
 def loose_influence(player,cards,players):
     if len(cards.hands[player]) == 2:
-        withdrawed_card = int(input("Que carta deseas eliminar : \n1.-" + cards.hands[player][0]+ "\n2.-"+cards.hands[player][1]))
+        withdrawed_card = int(input("Que carta deseas eliminar : \n1.-" + cards.hands[player][0]+ "\n2.-"+cards.hands[player][1]+"\n"))
         cards.withdrawed.append(cards.hands[player].pop(withdrawed_card-1))
     else:
         cards.withdrawed.append(cards.hands[player].pop(0))
-        print("El jugador"+ players.jugadores[player]+ "queda eliminado")
+        print("El jugador "+ players.jugadores[player]+ " queda eliminado")
         players.deadplayers.append(players.jugadores[player])
     
-
-
 
 def interface(x,p,c,k):
     showcards = input("Quieres ver tus cartas\n Si/No\n")
     if showcards.upper() == "SI":
-        print("Tus cartas : {}".format(c.hands[x]))
+        print("\nTus cartas : {}".format(c.hands[x]))
     
     if len(c.withdrawed) != 0: 
         print("Cartas descartadas {}".format(c.withdrawed))
@@ -66,6 +64,14 @@ def interface(x,p,c,k):
         elif response == 4 and k.players_coins[x] < 3:
             print("No tienes suficientes monedas para realizar esta accion\n")
             response = -1
+        elif response == 5:
+            extorted =[]
+            for i in p.jugadores:
+                if i != p.jugadores[x] and i not in p.deadplayers and k.players_coins[p.jugadores.index(i)] != 0: 
+                    extorted.append(p.jugadores[x])
+            if len(extorted) == 0:
+                print("El resto de los jugadores no tienen monedas, no puedes ejecutar extorsion") 
+                response = -1
 
     return response
 
@@ -76,7 +82,7 @@ def look_counter_def(player,players,cod):
     d = ["desafiar","contraatacar"]
     counter = []
     for i in players.jugadores:
-        if i != players.jugadores[player]: 
+        if i != players.jugadores[player] and i not in players.deadplayers: 
             value = input(i+ ", quieres " + d[cod] + " la accion del jugador "+ players.jugadores[player]+ "\n Si/No\n")
             if value.upper() == "SI":
                 counter.append(players.jugadores.index(i))
@@ -119,30 +125,28 @@ def challenge(player,players,cards,action):
         if len(counter_card(action)) == 2:
             if counter_card(action)[0] not in cards.hands[player]  and  counter_card(action)[1] not in cards.hands[player]:
                 print("\n"+players.jugadores[player]+ " ha perdido una carta de influencia")
-                loose_influence(player,cards,players)                  
+                loose_influence(player,cards,players)   
+                return 1               
             else:
-                print(players.jugador[player] + " si posee la carta "+counter_card(1))
+                print(players.jugador[player] + " si posee la carta "+counter_card(action))
                 print("\n"+players.jugadores[challenger]+ " ha perdido una carta de influencia")
                 loose_influence(challenger,cards,players) 
-                cards.changecard(player,cards.hands[player].index(counter_card(1))) 
+                cards.changecard(player,cards.hands[player].index(counter_card(action)))
+                return 2
 
         else:
             if counter_card(action) not in cards.hands[player]:
                 print("\n"+players.jugadores[player]+ " ha perdido una carta de influencia")
                 loose_influence(player,cards,players) 
+                return 1
             else:
-                print(players.jugador[player] + " si posee la carta "+counter_card(1))
+                print(players.jugadores[player] + " si posee la carta "+counter_card(action))
                 print("\n"+players.jugadores[challenger]+ " ha perdido una carta de influencia")
                 loose_influence(challenger,cards,players) 
-                cards.changecard(player,cards.hands[player].index(counter_card(1)))    
-        return 1
-
-        
-
-
+                cards.changecard(player,cards.hands[player].index(counter_card(action))) 
+                return 2
 
 def action_played(player, action, players,cards,coins):
-    action_names = ["Ingresos","Ayuda extranjera","Golpe","Duque-Impuestos","Asesino-Asesinato","Capitán-Extorsión","Embajador-Cambio"]
 
     if action == 0:
         coins.adquired(player,1)
@@ -157,21 +161,65 @@ def action_played(player, action, players,cards,coins):
         print("Que jugador quieres atacar")
         attack = ""
         for i in players.jugadores:
-            if i != players.jugadores[player]: 
+            if i != players.jugadores[player] and i not in players.deadplayers: 
                 print(i) 
-        while attack not in players.jugadores 
+        while attack not in players.jugadores: 
             attack = input()
         attack_index = players.jugadores.index(attack)
         loose_influence(attack_index,cards,players)
 
     elif action ==3:
-        interaction = counteraction(player,players,cards,action)
+        interaction = challenge(player,players,cards,action)
         if interaction == 0:
             coins.adquired(player,3)
 
-
     elif action == 4:
+        coins.lost(player,3)
+        print("Que jugador quieres atacar")
+        attack = ""
+        for i in players.jugadores:
+            if i != players.jugadores[player] and i not in players.deadplayers: 
+                print(i) 
+        while attack not in players.jugadores: 
+            attack = input()
 
+
+        interaction = counteraction(player,players,cards,action)
+        
+        if interaction == 0:
+            interaction = challenge(player,players,cards,8)
+            if interaction == 1:
+                coins.adquired(player,3)
+            else:
+                loose_influence(attack,cards,players) 
+        elif interaction == 1:
+            print("Han contraatacado un Asesinato")
+
+
+    elif action == 5:
+        print("A cual jugador le deseas robar")
+        attack = ""
+        for i in players.jugadores:
+            if i != players.jugadores[player] and i not in players.deadplayers and coins.players_coins[players.jugadores.index(i)] != 0: 
+                print(i) 
+        while attack not in players.jugadores: 
+            attack = input()
+
+
+        interaction = counteraction(player,players,cards,action)
+        
+        if interaction == 0:
+            interaction = challenge(player,players,cards,7)
+            if interaction == 0 or interaction == 1:
+                coins.adquired(player,coins.lost(player,2))
+        elif interaction == 1:
+            print("Han contraatacado un Robo")
+    
+    elif action == 6:
+        interaction = challenge(player,players,cards,action)    
+
+        if interaction == 0 or interaction == 2:
+            cards.exchange(player)
         
 
 
@@ -190,30 +238,28 @@ def main():
     cont = 0
     rounds = 0
 
-    for 
-
     while len(players.deadplayers) != (x-1):
 
-        if cont == (x+1):
+        if cont == (x):
             cont = 0
             rounds += 1
-            return print("Ronda "+ str(rounds) + "terminada")
+            print("\nRonda "+ str(rounds) + " terminada")
+
 
         if players.jugadores[cont] in players.deadplayers:
             cont +=1    
         else:
+            print("\nEs el turno de "+ players.jugadores[cont]+"\n")
             action = interface(cont,players,cards,coins)
             action_played(cont, action, players,cards, coins)
 
-
-
-
             cont += 1
     
+    for i in players.jugadores:
+        if i not in players.deadplayers:
+            print("\n"+ i +" ha ganado el juego")
 
 
-
-    #while len(Players.__deadplayers) != (x-1):
 
 
 main()

@@ -52,7 +52,44 @@ class Cards:
         hand_card = self.__hands[player].pop(card)
         self.__hands[player].append(top_deck)
         self.__deck.append(hand_card)
-        shuffle_deck()
+        self.shuffle_deck()
+
+
+    def exchange(self,player):
+        tradeables = []
+        x = 0
+        while x < len(self.__hands[player]):
+            tradeables.append(self.__hands[player][x])
+            x += 1
+        tradeables.append(self.__deck.pop(0))  
+        tradeables.append(self.__deck.pop(1))
+
+        print("Escoje el numero de 2 cartas para devolver al deck: ")
+        x = 0
+        while x < len(tradeables):
+            print(str(x+1)+".- "+ tradeables[x])
+            x += 1
+        
+        card1 = int(input("Primera carta: ")) -1
+        card2 = int(input("Segunda carta: ")) -1
+
+        while card1 == card2:
+            card2 = int(input("Segunda carta: ")) -1
+
+        card1=tradeables[card1]
+        card2=tradeables[card2]
+
+        self.__deck.append(card1)
+        self.__deck.append(card2)
+        self.shuffle_deck
+        
+        tradeables.remove(card1)
+        tradeables.remove(card2)
+
+        self.__hands[player]= tradeables
+
+
+    
             
 
     

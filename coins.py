@@ -17,11 +17,15 @@ class Coins:
     #Metodos
     
     def lost(self,player,amount):
-
+        before = self.players_coins[player]
         if (self.__players_coins[player] - amount) < 0:
             self.__players_coins[player] = 0
         else:
             self.__players_coins[player] -= amount
+        after = self.players_coins[player]
+        loss = before-after
+        return loss
+
 
     def adquired(self,player,amount):
 
